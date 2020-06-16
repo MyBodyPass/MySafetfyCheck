@@ -1,4 +1,4 @@
-# MyBodyPass App
+# MySafetyCheck App
 
 ## Backend Mock
 Backend can be mocked by Node Red flows.
