@@ -1,0 +1,539 @@
+= Interface specification for Corona App Backend
+:Author: Florian Schleich
+:Email: f.schleich@r-ie.de
+:Revision: 1
+:Date: 2010-04-09
+:source-highlighter: rouge
+:rouge-style: monokai
+
+== Register citizen
+
+.Endpoint
+`POST /register`
+
+.Request-Body
+[source,json]
+----
+{"username": "...", "email": "...", "password": "[bcrypted hash]"}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+----
+
+.Authorization
+This Endpoint should be not secured with authorization, because at the time this endpoint is called no user exists.
+
+.Endpoint-Response
+Success: `{"uid": "..."}` HTTP-Status: 201
+
+Error: `{"error": "[error message]"}` HTTP-Status: <error code>
+
+== Resend confirmation email
+
+.Endpoint
+`POST /register/resend-email`
+
+.Request-Body
+[source,json]
+----
+{
+"email": "..."
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+----
+
+.Authorization
+This Endpoint should be not secured with authorization, because at the time this endpoint is called the user is not confirmed yet.
+
+.Endpoint-Response
+Success: `{}` HTTP-Status: 202
+
+Error: `{"error": "[error message]"}` HTTP-Status: <error code>
+
+== Register citizen anonymously
+
+.Endpoint
+`POST /register-anonymously`
+
+.Request-Body
+[source,json]
+----
+{
+"username": "...",
+"password": "[bcrypted hash]"
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+----
+
+.Authorization
+This Endpoint should be not secured with authorization, because at the time this endpoint is called no user exists.
+
+.Endpoint-Response
+Success: `{"uid": "..."}` HTTP-Status: 201
+
+Error: `{"error": "[error message]"}` HTTP-Status: [error code]
+
+== Forgot Password
+
+.Endpoint
+`POST /password/forgot`
+
+.Request-Body
+[source,json]
+----
+{
+"username": "...",
+"email": "..."
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+----
+
+.Authorization
+This Endpoint should be not secured with authorization, because user may be logged out.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 202
+[source,json]
+
+----
+{}
+----
+
+== Authentication
+
+.Endpoint
+`POST /login`
+
+.Request-Body
+[source,json]
+----
+{"username": "...", "password": "[plain text]"}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+----
+
+.Authorization
+This Endpoint should be not secured with authorization, because at the time this endpoint user is not authenticated yet.
+
+.Endpoint-Response
+Success: `{}` HTTP-Status: 200
+
+Error: `{"error": "Invalid credentials"}` HTTP-Status: 401
+
+.Response-Headers on success
+[source]
+----
+Authorization: Bearer [JWT token]
+----
+
+== Show Profile
+
+.Endpoint
+`GET /profile`
+
+.Request-Body
+[source,json]
+----
+{}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 200
+[source,json]
+
+----
+{"username": "...", "name": "..."|null, "email": "..."|null, "uid": ...", "worksInMedicine": true|false|null, "hasChronicDiseases": true|false|null, "image": "base64 encoded image"|null}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Update Profile
+
+.Endpoint
+`PUT /profile`
+
+.Request-Body
+[source,json]
+----
+{
+"name": "...",
+"email": "...",
+"worksInMedicine": true|false,
+"hasChronicDiseases": true|false,
+"image": "base64 encoded image",
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 202
+[source,json]
+
+----
+{}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Update Password
+
+.Endpoint
+`PATCH /profile/password`
+
+.Request-Body
+[source,json]
+----
+{
+"password": "[bcrypted hash]",
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 202
+[source,json]
+
+----
+{}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Submit Survey
+
+.Endpoint
+`POST /surveys`
+
+.Request-Body
+[source,json]
+----
+{
+"directContactToCovidSuspicion": true|false,
+"directContactToCovid": true|false,
+"hasCough": true|false,
+"hasFever": true|false,
+"hasSoreThroat": true|false,
+"hasHeadache": true|false,
+"hasLassitude": true|false,
+"hasDysgeusia": true|false,
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527,
+"score": 10
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 201
+[source,json]
+
+----
+{"uid": "12Z456G0"}
+----
+
+On authorization error: HTTP-Status: 401
+
+== List My Surveys
+
+.Endpoint
+`GET /surveys`
+
+.Request-Body
+[source,json]
+----
+{}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 200
+[source,json]
+
+----
+{
+"surveys": [
+	{
+	"directContactToCovidSuspicion": true|false,
+	"directContactToCovid": true|false,
+	"hasCough": true|false,
+	"hasFever": true|false,
+	"hasSoreThroat": true|false,
+	"hasHeadache": true|false,
+	"hasLassitude": true|false,
+	"hasDysgeusia": true|false,
+	"timestamp": 16542520,
+	"score": 10,
+	},
+	{
+	"directContactToCovidSuspicion": true|false,
+	"directContactToCovid": true|false,
+	"hasCough": true|false,
+	"hasFever": true|false,
+	"hasSoreThroat": true|false,
+	"hasHeadache": true|false,
+	"hasLassitude": true|false,
+	"hasDysgeusia": true|false,
+	"timestamp": 16542520,
+	"score": 10,
+	},
+	...
+]
+}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Location Check-In
+
+.Endpoint
+`POST /checkins/location`
+
+.Request-Body
+[source,json]
+----
+{
+"locationUid": "12345678",
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 201
+[source,json]
+
+----
+{}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Citizen Check-In
+
+.Endpoint
+`POST /checkins/citizen`
+
+.Request-Body
+[source,json]
+----
+{
+"citizenUid": "12345678",
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 201
+[source,json]
+
+----
+{}
+----
+
+On authorization error: HTTP-Status: 401
+
+== Location Check-Out
+
+.Endpoint
+`POST /location-checkout`
+
+.Request-Body
+[source,json]
+----
+{
+"uid": "12345678", 
+"queuedTimestamp": 16542520,
+"dispatchedTimestamp": 16542527
+}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 202
+[source,json]
+
+----
+{"event": "checkout", "location": {"name": "REWE Darmstadt"}}
+----
+
+On authorization error: HTTP-Status: 401
+
+== List Check-Ins
+
+.Endpoint
+`GET /checkins`
+
+.Request-Body
+[source,json]
+----
+{}
+----
+
+.Request-Headers
+[source]
+----
+Accept-Content: application/json
+Content-Type: application/json
+Authorization: Bearer [JWT Token]
+----
+
+.Authorization
+This Endpoint should be authorized with the JWT Token in the request header.
+
+.Endpoint-Response
+Success:
+HTTP-Status: 200
+[source,json]
+
+----
+{
+"locations": [
+	{
+		"checkin": 1654287784,
+		"checkout": 1654287784,
+		"uid": 12345678,
+		"name": "REWE Darmstadt"
+	},
+	{
+		"checkin": 1654287784,
+		"checkout": 1654287784,
+		"uid": 12345678,
+		"name": "REWE Darmstadt"
+	},
+	{
+		"checkin": 1654287784,
+		"checkout": 1654287784,
+		"uid": 12345678,
+		"name": "REWE Darmstadt"
+	},
+	...
+]
+}
+----
+
+On authorization error: HTTP-Status: 401
+
